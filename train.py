@@ -12,6 +12,12 @@ import random
 
 
 def make_classifier(in_features, num_classes):
+    """
+    Creates a linear classifier with dropout and ReLU activation.
+    :param in_features: number of input features
+    :param num_classes: number of output classes
+    :return: nn.Sequential classifier
+    """
     return nn.Sequential(
         nn.Dropout(p=0.5),
         nn.Linear(in_features, 512),
