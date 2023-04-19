@@ -9,6 +9,7 @@ import torch.optim as optim
 import matplotlib.pyplot as plt
 import shutil
 import random
+from preprocess import correction, dataload
 
 
 def make_classifier(in_features, num_classes):
@@ -27,40 +28,35 @@ def make_classifier(in_features, num_classes):
 
 
 def get_accuracy(model, loader):
-    use_cuda = True
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+    model.eval()
+
     correct = 0
     total = 0
-    for imgs, labels in loader:
 
-        #############################################
-        # To Enable GPU Usage
-        if use_cuda and torch.cuda.is_available():
-            imgs = imgs.cuda()
-            labels = labels.cuda()
-        #############################################
-        output = model(imgs)
-        # print(imgs.shape)
-        # print(labels)
-        # print(output.shape)
+    with torch.no_grad():
+        for imgs, labels in loader:
+            imgs = imgs.to(device)
+            labels = labels.to(device)
 
-        # select index with maximum prediction score
-        pred = output.max(1, keepdim=True)[1]
-        correct += pred.eq(labels.view_as(pred)).sum().item()
-        total += imgs.shape[0]
+            output = model(imgs)
 
-        #############################################
-        del imgs, labels
-        torch.cuda.empty_cache()
-        #############################################
+            # select index with maximum prediction score
+            pred = output.max(1, keepdim=True)[1]
+            correct += pred.eq(labels.view_as(pred)).sum().item()
+            total += imgs.size(0)
+
+    model.train()
     return correct / total
 
 
-# This train for post-parameter tuning, with best val_acc and loss checkpoints
 def train(model, train_loader, val_loader, batch_size, num_epochs=1, lr=0.01, momentum=0.9):
-    use_cuda = True
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
 
     weights = [1/363, 1/1408, 1/3736]
-    class_weights = torch.FloatTensor(weights).cuda()
+    class_weights = torch.FloatTensor(weights).to(device)
     criterion = torch.nn.CrossEntropyLoss(weight=class_weights)
 
     optimizer = optim.Adam(model.parameters(), lr)
@@ -69,31 +65,21 @@ def train(model, train_loader, val_loader, batch_size, num_epochs=1, lr=0.01, mo
     max_val_acc = 0
     min_loss = 10000
 
-    #############################################
     if torch.cuda.is_available():
-        model.cuda()
-        print('CUDA is available!  Training on GPU ...')
+        print('CUDA is available! Training on GPU ...')
     else:
-        print('CUDA is not available.  Training on CPU ...')
-    #############################################
+        print('CUDA is not available. Training on CPU ...')
 
     # training
     n = 0  # the number of iterations
     for epoch in range(num_epochs):
         print('Epoch:', epoch)
+        model.train()  # Set model to training mode
         for imgs, labels in train_loader:
-            # print(imgs.shape)
-            # print(labels.shape)
-
-            #############################################
-            # To Enable GPU Usage
-            if use_cuda and torch.cuda.is_available():
-                imgs = imgs.cuda()
-                labels = labels.cuda()
-            #############################################
+            imgs = imgs.to(device)
+            labels = labels.to(device)
 
             out = model(imgs)             # forward pass
-            # print(out.shape)
             loss = criterion(out, labels)  # compute the total loss
             loss.backward()               # backward pass (compute parameter updates)
             optimizer.step()              # make the updates for each parameter
@@ -104,12 +90,11 @@ def train(model, train_loader, val_loader, batch_size, num_epochs=1, lr=0.01, mo
             # compute *average* loss
             losses.append(float(loss)/batch_size)
             n += 1
-            # print(float(loss)/batch_size)
 
-            #############################################
             del imgs, labels
             torch.cuda.empty_cache()
-            #############################################
+
+        model.eval()  # Set model to evaluation mode
         tacc = get_accuracy(model, train_loader)
         vacc = get_accuracy(model, val_loader)
         train_acc.append(tacc)  # compute training accuracy
@@ -146,10 +131,16 @@ def train(model, train_loader, val_loader, batch_size, num_epochs=1, lr=0.01, mo
 
 
 def main():
+    # Make a balanced dataset
+    data_dir = 'CSC413Project/COVID-19 Radiography Database'
+    data_dir = correction(data_dir)
+
+    # Load the data
+    trainLoader, validLoader, testLoader = dataload(data_dir=data_dir)
+
     batch_size = 32
     learning_rate = 0.001
     epochs = 20
-    trainLoader, validLoader, testLoader = dataload(batch_size, data_dir)
     model = cnn_finetune.make_model('xception', num_classes=3, pretrained=True, input_size=(
         224, 224), classifier_factory=make_classifier)
     train(model, trainLoader, validLoader, batch_size,
