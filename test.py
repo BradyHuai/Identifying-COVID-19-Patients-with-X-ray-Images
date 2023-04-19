@@ -61,12 +61,12 @@ def main():
     test_labels = []
     pred_labels = []
     for imgs, labels in validLoader:
-        #############################################
+        ############################################
         #To Enable GPU Usage
         if use_cuda and torch.cuda.is_available():
         imgs = imgs.cuda()
         labels = labels.cuda()
-        #############################################
+        ############################################
         output = model(imgs)
         #select index with maximum prediction score
         pred = output.max(1, keepdim=True)[1].reshape(1,-1)
