@@ -1,12 +1,7 @@
-import pretrainedmodels
-import cnn_finetune
 import os
-import torch.nn as nn
-from torchvision import datasets, models, transforms
+from torchvision import datasets, transforms
 import torch
 import numpy as np
-import torch.optim as optim
-import matplotlib.pyplot as plt
 import shutil
 import random
 

@@ -4,11 +4,8 @@ import os
 import torch.nn as nn
 from torchvision import datasets, models, transforms
 import torch
-import numpy as np
 import torch.optim as optim
 import matplotlib.pyplot as plt
-import shutil
-import random
 from preprocess import correction, dataload
 
 
