@@ -43,18 +43,23 @@ def plot_confusion_matrix(cm, classes,
 
 
 def test(dataLoader):
+    """
+    Test the model and print the confusion matrix and classification report
+    Args:
+        dataLoader: the data loader for the test data
+    Returns:
+        None"""
     model = torch.load('/CSC413Project/ModelCheckPoint/0.9705882352941176')
 
     use_cuda = True
     test_labels = []
     pred_labels = []
     for imgs, labels in dataLoader:
-        ############################################
         # To Enable GPU Usage
         if use_cuda and torch.cuda.is_available():
             imgs = imgs.cuda()
             labels = labels.cuda()
-        ############################################
+
         output = model(imgs)
         # select index with maximum prediction score
         pred = output.max(1, keepdim=True)[1].reshape(1, -1)

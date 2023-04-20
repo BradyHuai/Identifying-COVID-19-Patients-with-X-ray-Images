@@ -7,6 +7,29 @@ import random
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
+    """
+    Recursively copies a directory tree from source to destination.
+
+    Args:
+        src (str): Source directory path.
+        dst (str): Destination directory path.
+        symlinks (bool, optional): If True, copies symbolic links as links instead of copying the linked file/directory. Default is False.
+        ignore (function, optional): A function that takes a directory name and filenames as input and returns a list of filenames to ignore during the copy process. Default is None.
+
+    Raises:
+        Error: If source directory does not exist or if there is an error during the copy process.
+
+    Note:
+        - The `src` directory and its contents will be copied to the `dst` directory, recursively.
+        - If the `dst` directory does not exist, it will be created.
+        - If a file or directory already exists in the `dst` directory with the same name, it will be overwritten.
+
+    Example:
+        >>> copytree('/path/to/source', '/path/to/destination')
+        >>> copytree('/path/to/source', '/path/to/destination', symlinks=True)
+        >>> copytree('/path/to/source', '/path/to/destination', ignore=shutil.ignore_patterns('*.txt', '*.log'))
+
+    """
     for item in os.listdir(src):
         s = os.path.join(src, item)
         d = os.path.join(dst, item)
@@ -17,6 +40,16 @@ def copytree(src, dst, symlinks=False, ignore=None):
 
 
 def correction(data_dir):
+    """
+    Corrects the data directory to have the same number of images for each class.
+    :param data_dir: path to the data directory
+    :return: None
+
+    Note:
+        - The `data_dir` directory and its contents will be copied to the `data_dir` directory, recursively.
+        - If the `data_dir` directory does not exist, it will be created.
+        - If a file or directory already exists in the `data_dir` directory with the same name, it will be overwritten.
+    """
     root = os.path.split(data_dir)[0]
     new_path = os.path.join(root, "Balanced")
     if not os.path.isdir(new_path):
@@ -68,6 +101,12 @@ def correction(data_dir):
 
 # targets: 0 - COVID-19, 1 - NOFINDING, 2 - THORAXDISEASE
 def dataload(data_dir, batch_size=20):
+    """
+    Loads the data from the data directory and returns the train, valid, and test dataloaders.
+    :param data_dir: path to the data directory
+    :param batch_size: batch size
+    :return: train, valid, and test dataloaders
+    """
     # Define dataloader parameters
     num_workers = 0
 
@@ -104,6 +143,15 @@ def dataload(data_dir, batch_size=20):
 
 
 def make_weights_for_balanced_classes(images, nclasses):
+    """
+    Makes a list of weights for each image in the dataset to balance the classes.
+    :param images: list of images
+    :param nclasses: number of classes
+    :return: list of weights
+
+    Note:
+        - The weights are inversely proportional to the number of images in each class.
+    """
     count = np.zeros(nclasses)
     for item in images:
         count[item[1]] += 1

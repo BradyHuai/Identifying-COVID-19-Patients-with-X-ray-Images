@@ -25,6 +25,15 @@ def make_classifier(in_features, num_classes):
 
 
 def get_accuracy(model, loader):
+    """
+    Computes the accuracy of the model on the given data.
+    :param model: model to evaluate
+    :param loader: data loader for the data
+    :return: accuracy
+
+    Note:
+        - The model is set to evaluation mode before computing the accuracy.
+    """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
     model.eval()
@@ -49,6 +58,22 @@ def get_accuracy(model, loader):
 
 
 def train(model, train_loader, val_loader, batch_size, num_epochs=1, lr=0.01, momentum=0.9):
+    """
+    Trains the model.
+
+    :param model: model to train
+    :param train_loader: data loader for the training data
+    :param val_loader: data loader for the validation data
+    :param batch_size: batch size
+    :param num_epochs: number of epochs
+    :param lr: learning rate
+    :param momentum: momentum
+    :return: None
+
+    Note:
+        - The model is set to training mode before training.
+        - The model is set to evaluation mode before computing the accuracy.
+    """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
