@@ -189,6 +189,7 @@ def main():
     epochs = 20
     model = cnn_finetune.make_model('xception', num_classes=3, pretrained=True, input_size=(
         224, 224), classifier_factory=make_classifier)
+    #model = Baseline(16,3)
     train(model, trainLoader, validLoader, batch_size,
           num_epochs=epochs, lr=learning_rate, momentum=0.9)
 
