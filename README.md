@@ -24,3 +24,5 @@ Here, replace 'filename.py' with the name of the file you want to run.
 
 For example, if the name of the file is 'train.py', then the command will be:
 python train.py
+
+Run the train.py file first before running test.py because train.py will save the best model which test.py will use for evaluation.
